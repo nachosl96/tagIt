@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-import sys, os, json, time, random, math, urllib, urllib2, pycurl, subprocess, boto, boto3, $
+import sys, os, json, time, random, math, urllib, urllib2, pycurl, subprocess, boto, boto3$
 import RPi.GPIO as GPIO
 from subprocess import call
 ##SETUP FOR AWS CONNECTION
