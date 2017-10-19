@@ -1,11 +1,11 @@
 #!/usr/bin/env python
-import sys, os, json, time, random, math, urllib, urllib2, pycurl, subprocess, boto, boto3$
+import sys, os, json, time, random, math, urllib, urllib2, pycurl, subprocess, boto, boto3, boto.s3, os.path, requests, StringIO, os.path, argparse, signal
 import RPi.GPIO as GPIO
 from subprocess import call
 ##SETUP FOR AWS CONNECTION
 # Fill these in - you get them when you sign up for S3
-AWS_ACCESS_KEY_ID = 'YOUR_ID_HERE'
-AWS_ACCESS_KEY_SECRET = 'YOUR_ACCESS_KEY_HERE'
+AWS_ACCESS_KEY_ID = 'AKIAIU7HXN7NQPIYT3KQ'
+AWS_ACCESS_KEY_SECRET = 'pz3j+wZt8/aJDs40Gc8oAiSVBFzT57fTd5qrj4xQ'
 # Fill in info on data to upload destination bucket name
 bucket_name = 'tagit-imagebucket'
 # source directory
@@ -23,13 +23,12 @@ bucket = conn.get_bucket(bucket_name)
 #bucket = conn.create_bucket(bucket_name,
 #       location=boto.s3.connection.Location.DEFAULT)
 ##SETUP FOR TRANSLATION
-LANGUAGE = "en-US" # Language to use with TTS - this won't do any translation, just the voic$
+LANGUAGE = "en-US" # Language to use with TTS - this won't do any translation, just the voice it's spoken with
 ENCODING = "UTF-8" # Character encoding to use
 text="An error occurred while analyzing the photo. Please retry"
 GPIO.setmode(GPIO.BCM)
 GPIO.setup(17, GPIO.IN)
 translation= ""
-
 
 def percent_cb(complete, total):
     sys.stdout.write('.')
@@ -64,7 +63,7 @@ def upload ():
                         while (fp.tell() < filesize):
                                 fp_num += 1
                                 print "uploading part %i" %fp_num
-                                mp.upload_part_from_file(fp, fp_num, cb=percent_cb, num_cb=1$
+                                mp.upload_part_from_file(fp, fp_num, cb=percent_cb, num_cb=10, size=PART_SIZE)
                         mp.complete_upload()
 
                 else:
@@ -98,7 +97,7 @@ class Translator(object):
             'scope': 'http://api.microsofttranslator.com',
             'grant_type': 'client_credentials'
         }
-        oauth_junk = json.loads(requests.post(Translator.oauth_url, data=urllib.urlencode(oa$
+        oauth_junk = json.loads(requests.post(Translator.oauth_url, data=urllib.urlencode(oauth_args)).content)
         self.headers = {'Authorization': 'Bearer ' + oauth_junk['access_token']}
 
     def translate(self, origin_language, destination_language, text):
@@ -108,9 +107,9 @@ class Translator(object):
             'to': destination_language,
             'from': origin_language
         }
-        translation_result = requests.get(Translator.translation_url + urllib.urlencode(tran$
+        translation_result = requests.get(Translator.translation_url + urllib.urlencode(translation_args),
                                           headers=self.headers)
-		translation = translation_result.text[2:-1]
+        translation = translation_result.text[2:-1]
 
         print "Translation: ", translation
         speak_text(origin_language, 'Translating ' + text)
@@ -123,12 +122,9 @@ while True:
         os.system("raspistill -t 1000 -hf -vf -o image/testimage.jpg")
         #Code for image uploading, Amazon WS Rekogniion Software and descricption retrieving
         upload()
-       
         for label in rekognition(3, 70):
                 text = "{Name} - {Confidence}%".format(**label)
                 print text
                 trunc = text.split("-")[0]
-        
-                call(["mpg123", "-q", "-y", "http://translate.google.com/translate_tts?ie=UT$
+                call(["mpg123", "-q", "-y", "http://translate.google.com/translate_tts?ie=UTF-8&client=tw-ob&q=%s&tl=%s" % (trunc, LANGUAGE)])
                 kill_mpg123()
-    
