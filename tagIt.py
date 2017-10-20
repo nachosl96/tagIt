@@ -4,8 +4,8 @@ import RPi.GPIO as GPIO
 from subprocess import call
 ##SETUP FOR AWS CONNECTION
 # Fill these in - you get them when you sign up for S3
-AWS_ACCESS_KEY_ID = 'AKIAIU7HXN7NQPIYT3KQ'
-AWS_ACCESS_KEY_SECRET = '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'
+AWS_ACCESS_KEY_ID = 'AKIAIU7HXN7NQYT3KQ'
+AWS_ACCESS_KEY_SECRET = 'pz3j+wZt8/aGc8oAiSVBFzT57fTd5qrj4xQ'
 # Fill in info on data to upload destination bucket name
 bucket_name = 'tagit-imagebucket'
 # source directory
